@@ -210,7 +210,7 @@ Low-level function to create a new DataSource instance. Used internally by `mana
 
 - Type: SQLite
 - Database: In-memory (`:memory:`)
-- Entities: Auto-discovered from `src/**/*.entity.ts`
+- Entities: from `NEOMA_MANAGED_DATASOURCE_ENTITIES` if set, otherwise auto-discovered from `src/**/*.entity.ts`
 - Synchronize: Enabled (auto-creates schema)
 
 ### `ManagedDataSourceModule.forRoot(entities?): DynamicModule`
@@ -219,7 +219,7 @@ Wires the managed test dataSource into a NestJS testing module. Exposes the `Dat
 
 **Parameters:**
 
-- `entities` _(optional)_ — TypeORM entity classes to register on the dataSource. Omit to auto-discover every `.entity.ts` file under the consumer's `src/`.
+- `entities` _(optional)_ — TypeORM entity classes to register on the dataSource. Omit to use `NEOMA_MANAGED_DATASOURCE_ENTITIES`, or to auto-discover every `.entity.ts` file under the consumer's `src/`.
 
 **Returns:** `DynamicModule` — a `@Global()` dynamic module exporting `getDataSourceToken()`.
 
@@ -242,7 +242,24 @@ imports: [ManagedDataSourceModule.forRoot()];
 
 ### Entity Discovery
 
-The package automatically discovers entities from:
+Entities are resolved in order of precedence:
+
+1. **Function parameter:** the `entities` passed to `managedDataSourceInstance()`, `dataSource()` or `ManagedDataSourceModule.forRoot()`.
+2. **Environment variable:** `NEOMA_MANAGED_DATASOURCE_ENTITIES`, a single glob.
+3. **Default:** `src/**/*.entity.ts`.
+
+#### `NEOMA_MANAGED_DATASOURCE_ENTITIES`
+
+A glob for the entities to register when none are passed, for projects whose entities aren't under `src/`, such as a Nest monorepo:
+
+```bash
+# .env.spec — quoted, since some env loaders treat # and braces specially
+NEOMA_MANAGED_DATASOURCE_ENTITIES="{apps,libs}/**/*.entity.ts"
+```
+
+It's read on each call, so a spec may also set it in a `beforeEach`. Unset or empty, the default applies.
+
+Without either, the package discovers entities from:
 
 ```
 src/**/*.entity.ts

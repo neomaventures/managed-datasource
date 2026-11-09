@@ -4,14 +4,28 @@ import { DataSource, type DataSourceOptions } from "typeorm"
 const DEFAULT_ENTITIES: DataSourceOptions["entities"] = ["src/**/*.entity.ts"]
 
 /**
+ * The entities to register when none are passed: the glob in
+ * `NEOMA_MANAGED_DATASOURCE_ENTITIES` if it's set, otherwise every
+ * `.entity.ts` file under `src`. Read on each call, so a spec may set it in a
+ * `beforeEach`.
+ *
+ * @returns The entities to register.
+ */
+const defaultEntities = (): DataSourceOptions["entities"] => {
+  const glob = process.env.NEOMA_MANAGED_DATASOURCE_ENTITIES
+  return glob ? [glob] : DEFAULT_ENTITIES
+}
+
+/**
  * Create a new dataSource for testing that uses an in-memory SQLite database.
  *
  * @param entities - TypeORM entities to register: an array of globs or entity
- *   classes. Defaults to every `.entity.ts` file under `src`.
+ *   classes. Defaults to the glob in `NEOMA_MANAGED_DATASOURCE_ENTITIES`, or
+ *   every `.entity.ts` file under `src` if that isn't set.
  * @returns An initialized dataSource.
  */
 export const dataSource = async (
-  entities: DataSourceOptions["entities"] = DEFAULT_ENTITIES,
+  entities: DataSourceOptions["entities"] = defaultEntities(),
 ): Promise<DataSource> => {
   const dataSource = new DataSource({
     type: "better-sqlite3",
@@ -49,7 +63,8 @@ const cacheKey = (entities: DataSourceOptions["entities"]): string =>
  * Different configs get isolated instances. All are destroyed after each test.
  *
  * @param entities - TypeORM entities to register: an array of globs or entity
- *   classes. Defaults to every `.entity.ts` file under `src`.
+ *   classes. Defaults to the glob in `NEOMA_MANAGED_DATASOURCE_ENTITIES`, or
+ *   every `.entity.ts` file under `src` if that isn't set.
  *
  * @example
  * ```typescript
@@ -60,7 +75,7 @@ const cacheKey = (entities: DataSourceOptions["entities"]): string =>
  * @returns A Promise resolving to the {@link DataSource} for this config.
  */
 export const managedDataSourceInstance = async (
-  entities: DataSourceOptions["entities"] = DEFAULT_ENTITIES,
+  entities: DataSourceOptions["entities"] = defaultEntities(),
 ): Promise<DataSource> => {
   const key = cacheKey(entities)
 

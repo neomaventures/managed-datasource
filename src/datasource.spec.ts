@@ -20,6 +20,41 @@ describe("managedDataSourceInstance", () => {
     })
   })
 
+  describe("given NEOMA_MANAGED_DATASOURCE_ENTITIES names a glob", () => {
+    beforeEach(() => {
+      process.env.NEOMA_MANAGED_DATASOURCE_ENTITIES = "src/post.entity.ts"
+    })
+
+    afterEach(() => {
+      delete process.env.NEOMA_MANAGED_DATASOURCE_ENTITIES
+    })
+
+    it("loads only the entities matching it by default", async () => {
+      const ds = await managedDataSourceInstance()
+      expect(targetsOf(ds)).toEqual([Post])
+    })
+
+    it("is overridden by entities passed in", async () => {
+      const ds = await managedDataSourceInstance([User])
+      expect(targetsOf(ds)).toEqual([User])
+    })
+  })
+
+  describe("given NEOMA_MANAGED_DATASOURCE_ENTITIES is empty", () => {
+    beforeEach(() => {
+      process.env.NEOMA_MANAGED_DATASOURCE_ENTITIES = ""
+    })
+
+    afterEach(() => {
+      delete process.env.NEOMA_MANAGED_DATASOURCE_ENTITIES
+    })
+
+    it("loads the default entities", async () => {
+      const ds = await managedDataSourceInstance()
+      expect(targetsOf(ds)).toIncludeSameMembers([User, Post])
+    })
+  })
+
   describe("given an explicit array of entity classes", () => {
     it("registers only those entities", async () => {
       const ds = await managedDataSourceInstance([User])

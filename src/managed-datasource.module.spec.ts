@@ -39,6 +39,26 @@ describe("ManagedDataSourceModule", () => {
       })
     })
 
+    describe("given no entities and NEOMA_MANAGED_DATASOURCE_ENTITIES names a glob", () => {
+      beforeEach(() => {
+        process.env.NEOMA_MANAGED_DATASOURCE_ENTITIES = "src/user.entity.ts"
+      })
+
+      afterEach(() => {
+        delete process.env.NEOMA_MANAGED_DATASOURCE_ENTITIES
+      })
+
+      it("registers only the entities matching it", async () => {
+        const module = await Test.createTestingModule({
+          imports: [ManagedDataSourceModule.forRoot()],
+        }).compile()
+
+        const ds = module.get<DataSource>(getDataSourceToken())
+
+        expect(targetsOf(ds)).toEqual([User])
+      })
+    })
+
     describe("global scope", () => {
       it("exposes the dataSource to downstream modules without re-import", async () => {
         @Injectable()

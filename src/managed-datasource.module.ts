@@ -21,8 +21,9 @@ export class ManagedDataSourceModule {
    * Wires the managed test dataSource into a NestJS testing module.
    *
    * @param entities - TypeORM entities to register on the dataSource.
-   *   Optional — defaults to every `.entity.ts` file under the consumer's
-   *   `src/` (matches the auto-discovery in `managedDataSourceInstance`).
+   *   Optional — defaults to the glob in `NEOMA_MANAGED_DATASOURCE_ENTITIES`, or
+   *   every `.entity.ts` file under the consumer's `src/` (as
+   *   `managedDataSourceInstance` does).
    * @returns A `DynamicModule` exporting the `DataSource` under
    *   `getDataSourceToken()`, visible globally.
    *

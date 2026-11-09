@@ -1,6 +1,6 @@
 {
   "name": "@neomaventures/managed-datasource",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "In-memory SQLite DataSource for NestJS tests — cached per entity set and destroyed between specs.",
   "author": "Daniel Bruce",
   "repository": {
